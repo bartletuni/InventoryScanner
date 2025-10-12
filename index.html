@@ -376,6 +376,202 @@
             margin-top: 20px;
         }
 
+        /* Items Modal Styles */
+        .items-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .items-modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .items-modal h2 {
+            margin-bottom: 20px;
+            color: #333;
+            text-align: center;
+        }
+
+        .items-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .item-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            gap: 15px;
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            align-items: center;
+        }
+
+        .item-row:hover {
+            background-color: #f8f9fa;
+        }
+
+        .item-details h4 {
+            margin: 0 0 5px 0;
+            color: #333;
+        }
+
+        .item-details p {
+            margin: 0;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        /* Dataset Modal Styles */
+        .dataset-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .dataset-modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 70vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .dataset-modal h2 {
+            margin-bottom: 20px;
+            color: #333;
+            text-align: center;
+        }
+
+        .current-dataset {
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .dataset-list {
+            margin-bottom: 20px;
+        }
+
+        .dataset-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .dataset-item.active {
+            border-color: #667eea;
+            background-color: #f8f9ff;
+        }
+
+        .dataset-info h4 {
+            margin: 0 0 5px 0;
+            color: #333;
+        }
+
+        .dataset-info p {
+            margin: 0;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .dataset-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .dataset-actions button {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+
+        .activate-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .activate-btn:hover {
+            background: #218838;
+        }
+
+        .new-dataset-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .new-dataset-input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+        }
+
+        .new-dataset-input:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .close-modal:hover {
+            color: #333;
+        }
+
         @media (max-width: 768px) {
             .container {
                 margin: 10px;
@@ -476,6 +672,13 @@
                     </div>
                     <button class="btn btn-success" onclick="exportToPDF()">Export PDF</button>
                 </div>
+
+                <div class="action-card">
+                    <div class="icon">🗂️</div>
+                    <h3>Manage Datasets</h3>
+                    <p>Create, switch between, and manage multiple datasets for your scanned items</p>
+                    <button class="btn btn-primary" onclick="openDatasetManager()">Manage Datasets</button>
+                </div>
             </div>
 
             <div class="stats-section">
@@ -523,6 +726,36 @@
             <div class="modal-actions">
                 <button class="btn btn-primary" onclick="confirmQuantity()">Confirm</button>
                 <button class="btn btn-secondary" onclick="cancelQuantity()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Items Modal -->
+    <div id="itemsModal" class="items-modal">
+        <div class="items-modal-content">
+            <h2>Scanned Items</h2>
+            <button class="close-modal" onclick="closeItemsModal()">&times;</button>
+            <div class="items-list" id="itemsList">
+                <!-- Items will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Dataset Modal -->
+    <div id="datasetModal" class="dataset-modal">
+        <div class="dataset-modal-content">
+            <h2>Manage Datasets</h2>
+            <button class="close-modal" onclick="closeDatasetModal()">&times;</button>
+            <div class="current-dataset">
+                <h4>Current Dataset:</h4>
+                <p id="currentDatasetName">No dataset selected</p>
+            </div>
+            <div class="dataset-list" id="datasetList">
+                <!-- Dataset items will be loaded here -->
+            </div>
+            <div class="new-dataset-form">
+                <input type="text" id="newDatasetName" placeholder="New Dataset Name">
+                <button class="btn btn-primary" onclick="createNewDataset()">Create New Dataset</button>
             </div>
         </div>
     </div>
@@ -1128,11 +1361,101 @@
         }
 
         function viewScannedItems() {
-            window.location.href = 'items.html';
+            openItemsModal();
         }
 
         function exportToPDF() {
             homePage.exportToPDF();
+        }
+
+        function openDatasetManager() {
+            openDatasetModal();
+        }
+
+        function closeDatasetModal() {
+            document.getElementById('datasetModal').style.display = 'none';
+        }
+
+        function createNewDataset() {
+            const newDatasetName = document.getElementById('newDatasetName').value.trim();
+            if (!newDatasetName) {
+                alert('Dataset name cannot be empty.');
+                return;
+            }
+
+            const datasets = JSON.parse(localStorage.getItem('datasets') || '[]');
+            if (datasets.some(ds => ds.name === newDatasetName)) {
+                alert('A dataset with this name already exists.');
+                return;
+            }
+
+            datasets.push({ name: newDatasetName, data: [] }); // Initialize with empty data
+            localStorage.setItem('datasets', JSON.stringify(datasets));
+            alert(`Dataset "${newDatasetName}" created successfully!`);
+            loadDatasets();
+            closeDatasetModal();
+        }
+
+        function loadDatasets() {
+            const datasetList = document.getElementById('datasetList');
+            const currentDatasetName = document.getElementById('currentDatasetName');
+            const datasets = JSON.parse(localStorage.getItem('datasets') || '[]');
+
+            datasetList.innerHTML = '';
+            currentDatasetName.textContent = 'No dataset selected';
+
+            if (datasets.length === 0) {
+                datasetList.innerHTML = '<p>No datasets found. Create a new one!</p>';
+                return;
+            }
+
+            datasets.forEach((dataset, index) => {
+                const datasetItem = document.createElement('div');
+                datasetItem.className = 'dataset-item';
+                datasetItem.innerHTML = `
+                    <div class="dataset-info">
+                        <h4>${dataset.name}</h4>
+                        <p>Items: ${dataset.data.length}</p>
+                    </div>
+                    <div class="dataset-actions">
+                        <button class="btn btn-primary" onclick="activateDataset(${index})">Activate</button>
+                        <button class="btn btn-secondary" onclick="deleteDataset(${index})">Delete</button>
+                    </div>
+                `;
+                datasetList.appendChild(datasetItem);
+            });
+
+            // Attempt to activate the first dataset if none are active
+            const activeDatasetIndex = datasets.findIndex(ds => ds.active);
+            if (activeDatasetIndex === -1 && datasets.length > 0) {
+                activateDataset(0);
+            }
+        }
+
+        function activateDataset(index) {
+            const datasets = JSON.parse(localStorage.getItem('datasets') || '[]');
+            datasets.forEach(ds => ds.active = false);
+            datasets[index].active = true;
+            localStorage.setItem('datasets', JSON.stringify(datasets));
+            document.getElementById('currentDatasetName').textContent = datasets[index].name;
+            alert(`Dataset "${datasets[index].name}" activated.`);
+            loadDatasets(); // Reload to update active class
+        }
+
+        function deleteDataset(index) {
+            const datasets = JSON.parse(localStorage.getItem('datasets') || '[]');
+            const datasetName = datasets[index].name;
+            if (confirm(`Are you sure you want to delete dataset "${datasetName}"? This action cannot be undone.`)) {
+                datasets.splice(index, 1);
+                localStorage.setItem('datasets', JSON.stringify(datasets));
+                alert(`Dataset "${datasetName}" deleted.`);
+                loadDatasets();
+                if (datasets.length === 0) {
+                    document.getElementById('currentDatasetName').textContent = 'No dataset selected';
+                } else if (datasets.length === 1) {
+                    activateDataset(0);
+                }
+            }
         }
 
         function scrollToScanner() {
@@ -1163,9 +1486,17 @@
 
         // Close modal when clicking outside
         window.onclick = function(event) {
-            const modal = document.getElementById('quantityModal');
-            if (event.target === modal) {
+            const quantityModal = document.getElementById('quantityModal');
+            const itemsModal = document.getElementById('itemsModal');
+            const datasetModal = document.getElementById('datasetModal');
+            if (event.target === quantityModal) {
                 cancelQuantity();
+            }
+            if (event.target === itemsModal) {
+                closeItemsModal();
+            }
+            if (event.target === datasetModal) {
+                closeDatasetModal();
             }
         }
 
@@ -1184,6 +1515,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             homePage = new HomePage();
             barcodeScanner = new BarcodeScanner();
+            loadDatasets(); // Load datasets on page load
         });
 
         // Refresh data when page becomes visible (in case user scanned items in another tab)
@@ -1196,6 +1528,4 @@
         });
     </script>
 </body>
-</html>
-
 </html>
