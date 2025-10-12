@@ -738,8 +738,11 @@
     <!-- Items Modal -->
     <div id="itemsModal" class="items-modal">
         <div class="items-modal-content">
-            <h2>Scanned Items</h2>
+            <h2>Scanned Items - <span id="itemsModalDatasetName">Current Dataset</span></h2>
             <button class="close-modal" onclick="closeItemsModal()">&times;</button>
+            <div style="margin-bottom: 20px; text-align: center;">
+                <button class="btn btn-danger" onclick="deleteAllItems()">Delete All Items</button>
+            </div>
             <div class="items-list" id="itemsList">
                 <!-- Items will be loaded here -->
             </div>
@@ -1389,13 +1392,17 @@
 
         function loadItemsInModal() {
             const itemsList = document.getElementById('itemsList');
-            const scannedData = JSON.parse(localStorage.getItem('scannedBarcodes') || '[]');
-            
-            if (scannedData.length === 0) {
+            const datasets = JSON.parse(localStorage.getItem('datasets') || '[]');
+            const currentDatasetIndex = datasets.findIndex(ds => ds.active);
+            const currentDataset = datasets[currentDatasetIndex] || { name: 'Current Dataset', data: [] };
+
+            document.getElementById('itemsModalDatasetName').textContent = currentDataset.name;
+
+            if (currentDataset.data.length === 0) {
                 itemsList.innerHTML = `
                     <div class="empty-state">
                         <div class="icon">📦</div>
-                        <p>No scanned items yet. Start scanning to see your products here!</p>
+                        <p>No scanned items yet in this dataset. Start scanning to see your products here!</p>
                     </div>
                 `;
                 return;
@@ -1409,7 +1416,7 @@
                     <div>Date</div>
                     <div>Action</div>
                 </div>
-            ` + scannedData.map((item, index) => `
+            ` + currentDataset.data.map((item, index) => `
                 <div class="item-row">
                     <div class="item-details">
                         <h4>${item.productName || 'Unknown Product'}</h4>
@@ -1426,12 +1433,14 @@
         }
 
         function deleteItem(index) {
-            const scannedData = JSON.parse(localStorage.getItem('scannedBarcodes') || '[]');
-            const item = scannedData[index];
+            const datasets = JSON.parse(localStorage.getItem('datasets') || '[]');
+            const currentDatasetIndex = datasets.findIndex(ds => ds.active);
+            const currentDataset = datasets[currentDatasetIndex] || { name: 'Current Dataset', data: [] };
+            const item = currentDataset.data[index];
             
             if (confirm(`Are you sure you want to delete "${item.productName || 'Unknown Product'}"?`)) {
-                scannedData.splice(index, 1);
-                localStorage.setItem('scannedBarcodes', JSON.stringify(scannedData));
+                currentDataset.data.splice(index, 1);
+                localStorage.setItem('datasets', JSON.stringify(datasets));
                 
                 // Refresh the modal content
                 loadItemsInModal();
@@ -1444,6 +1453,24 @@
                 }
                 
                 alert('Item deleted successfully!');
+            }
+        }
+
+        function deleteAllItems() {
+            const datasets = JSON.parse(localStorage.getItem('datasets') || '[]');
+            const currentDatasetIndex = datasets.findIndex(ds => ds.active);
+            const currentDataset = datasets[currentDatasetIndex] || { name: 'Current Dataset', data: [] };
+
+            if (confirm(`Are you sure you want to delete ALL items in "${currentDataset.name}"? This action cannot be undone.`)) {
+                currentDataset.data = [];
+                localStorage.setItem('datasets', JSON.stringify(datasets));
+                alert(`All items in "${currentDataset.name}" deleted.`);
+                loadItemsInModal();
+                if (homePage) {
+                    homePage.scannedData = homePage.loadData();
+                    homePage.updateStats();
+                    homePage.displayRecentScans();
+                }
             }
         }
 
