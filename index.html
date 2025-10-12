@@ -332,6 +332,60 @@
         </div>
 
         <div class="main-content">
+            <div class="action-grid">
+                <div class="action-card">
+                    <div class="icon">📷</div>
+                    <h3>Start Scanning</h3>
+                    <p>Use your device camera to scan barcodes and automatically lookup product information</p>
+                    <button class="btn btn-primary" onclick="window.location.href='scanner.html'">Open Scanner</button>
+                </div>
+
+                <div class="action-card">
+                    <div class="icon">📋</div>
+                    <h3>View Scanned Items</h3>
+                    <p>Review all your scanned products and manage your inventory</p>
+                    <button class="btn btn-secondary" onclick="viewScannedItems()">View Items</button>
+                </div>
+
+                <div class="action-card">
+                    <div class="icon">📄</div>
+                    <h3>Export to PDF</h3>
+                    <p>Generate a comprehensive PDF report of all scanned items</p>
+                    <div id="loadingPDF" class="loading">
+                        <div class="loading-spinner"></div>
+                        <p>Generating PDF...</p>
+                    </div>
+                    <button class="btn btn-success" onclick="exportToPDF()">Export PDF</button>
+                </div>
+            </div>
+
+            <div class="stats-section">
+                <h3>📊 Scanning Statistics</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalItems">0</div>
+                        <div class="stat-label">Total Items</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalQuantity">0</div>
+                        <div class="stat-label">Total Quantity</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="foundProducts">0</div>
+                        <div class="stat-label">Found Products</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="unknownProducts">0</div>
+                        <div class="stat-label">Unknown Products</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="recent-scans">
+                <h3>🕒 Recent Scans</h3>
+                <div id="recentScansList"></div>
+            </div>
+
             <div class="scanner-section">
                 <div class="scanner-container">
                     <div id="scanner">
