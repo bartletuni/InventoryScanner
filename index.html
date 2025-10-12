@@ -337,7 +337,7 @@
                     <div class="icon">📷</div>
                     <h3>Start Scanning</h3>
                     <p>Use your device camera to scan barcodes and automatically lookup product information</p>
-                    <button class="btn btn-primary" onclick="window.location.href='scanner.html'">Open Scanner</button>
+                    <button class="btn btn-primary" onclick="scrollToScanner()">Open Scanner</button>
                 </div>
 
                 <div class="action-card">
@@ -905,6 +905,13 @@
 
         function exportToPDF() {
             homePage.exportToPDF();
+        }
+
+        function scrollToScanner() {
+            const scannerSection = document.querySelector('.scanner-section');
+            if (scannerSection) {
+                scannerSection.scrollIntoView({ behavior: 'smooth' });
+            }
         }
 
         // Initialize the barcode scanner and home page when the document loads
