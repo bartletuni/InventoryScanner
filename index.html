@@ -1037,6 +1037,7 @@
                             productName: product.product_name || 'Unknown Product',
                             productBrand: product.brands || 'Unknown Brand',
                             productCategory: product.categories_tags ? product.categories_tags[0] : 'Unknown Category',
+                            productSize: product.quantity || product.serving_size || product.net_weight || 'Unknown Size',
                             productImage: product.image_url || null
                         };
                         
@@ -1045,6 +1046,7 @@
                         productInfo.productName = 'Unknown Product';
                         productInfo.productBrand = 'Unknown Brand';
                         productInfo.productCategory = 'Unknown Category';
+                        productInfo.productSize = 'Unknown Size';
                         this.updateStatus('Product not found in database', 'info');
                     }
                     
