@@ -443,85 +443,159 @@
 
             async startScanning() {
                 try {
-                    this.updateStatus('Initializing camera...', 'info');
+                    this.updateStatus('Requesting camera permission...', 'info');
                     
                     // Check if camera is available
                     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                        throw new Error('Camera access is not supported in this browser');
+                        throw new Error('Camera access is not supported in this browser. Please use a modern browser like Chrome, Firefox, or Safari.');
                     }
 
-                    // Request camera permission
-                    await navigator.mediaDevices.getUserMedia({ video: true });
+                    // First, request camera permission explicitly
+                    let stream;
+                    try {
+                        // Try with back camera first (for mobile)
+                        stream = await navigator.mediaDevices.getUserMedia({ 
+                            video: { 
+                                facingMode: { ideal: "environment" },
+                                width: { ideal: 640 },
+                                height: { ideal: 480 }
+                            } 
+                        });
+                    } catch (backCameraError) {
+                        console.log('Back camera not available, trying front camera:', backCameraError);
+                        try {
+                            // Fallback to front camera
+                            stream = await navigator.mediaDevices.getUserMedia({ 
+                                video: { 
+                                    facingMode: "user",
+                                    width: { ideal: 640 },
+                                    height: { ideal: 480 }
+                                } 
+                            });
+                        } catch (frontCameraError) {
+                            console.log('Front camera not available, trying any camera:', frontCameraError);
+                            // Fallback to any available camera with minimal constraints
+                            stream = await navigator.mediaDevices.getUserMedia({ 
+                                video: true 
+                            });
+                        }
+                    }
 
+                    // Stop the stream as Quagga will handle it
+                    if (stream) {
+                        stream.getTracks().forEach(track => track.stop());
+                    }
+
+                    this.updateStatus('Initializing scanner...', 'info');
                     this.startBtn.disabled = true;
                     this.stopBtn.disabled = false;
                     this.isScanning = true;
 
-                    // Configure Quagga
-                    Quagga.init({
+                    // Configure Quagga with more permissive settings
+                    const config = {
                         inputStream: {
                             name: "Live",
                             type: "LiveStream",
                             target: this.scanner,
                             constraints: {
-                                width: 640,
-                                height: 480,
-                                facingMode: "environment" // Use back camera on mobile
+                                width: { min: 320, ideal: 640, max: 1920 },
+                                height: { min: 240, ideal: 480, max: 1080 },
+                                aspectRatio: { min: 1, max: 2 },
+                                facingMode: "environment" // Prefer back camera
                             }
                         },
                         locator: {
                             patchSize: "medium",
                             halfSample: true
                         },
-                        numOfWorkers: 2,
+                        numOfWorkers: navigator.hardwareConcurrency || 2,
                         decoder: {
                             readers: [
                                 "code_128_reader",
                                 "ean_reader",
                                 "ean_8_reader",
                                 "code_39_reader",
-                                "code_39_vin_reader",
-                                "codabar_reader",
                                 "upc_reader",
-                                "upc_e_reader",
-                                "i2of5_reader"
+                                "upc_e_reader"
                             ]
                         },
                         locate: true
-                    }, (err) => {
-                        if (err) {
-                            console.error('Quagga initialization failed:', err);
-                            this.updateStatus('Failed to initialize scanner: ' + err.message, 'error');
-                            this.resetButtons();
-                            return;
-                        }
-                        
-                        console.log("Quagga initialization finished. Ready to start");
-                        Quagga.start();
-                        this.updateStatus('Scanner active - Point camera at barcode', 'success');
-                    });
+                    };
 
-                    // Listen for successful scans
-                    Quagga.onDetected((result) => {
-                        const code = result.codeResult.code;
-                        
-                        // Prevent duplicate scans within a short time
-                        if (!this.scannedCodes.has(code)) {
-                            this.scannedCodes.add(code);
-                            this.handleBarcodeDetected(code);
+                    // Try with environment camera first
+                    Quagga.init(config, (err) => {
+                        if (err) {
+                            console.log('Environment camera failed, trying user camera:', err);
                             
-                            // Remove from set after 2 seconds to allow rescanning
-                            setTimeout(() => {
-                                this.scannedCodes.delete(code);
-                            }, 2000);
+                            // Fallback to front camera
+                            config.inputStream.constraints.facingMode = "user";
+                            
+                            Quagga.init(config, (err2) => {
+                                if (err2) {
+                                    console.log('User camera failed, trying any camera:', err2);
+                                    
+                                    // Final fallback - remove facingMode constraint
+                                    delete config.inputStream.constraints.facingMode;
+                                    
+                                    Quagga.init(config, (err3) => {
+                                        if (err3) {
+                                            console.error('All camera options failed:', err3);
+                                            this.updateStatus('Failed to initialize scanner. Please check camera permissions and try again.', 'error');
+                                            this.resetButtons();
+                                            return;
+                                        }
+                                        this.startQuagga();
+                                    });
+                                } else {
+                                    this.startQuagga();
+                                }
+                            });
+                        } else {
+                            this.startQuagga();
                         }
                     });
 
                 } catch (error) {
                     console.error('Error starting scanner:', error);
-                    this.updateStatus('Error: ' + error.message, 'error');
+                    let errorMessage = 'Error starting scanner: ';
+                    
+                    if (error.name === 'NotAllowedError') {
+                        errorMessage += 'Camera permission denied. Please allow camera access and try again.';
+                    } else if (error.name === 'NotFoundError') {
+                        errorMessage += 'No camera found on this device.';
+                    } else if (error.name === 'NotReadableError') {
+                        errorMessage += 'Camera is already in use by another application.';
+                    } else if (error.name === 'OverconstrainedError') {
+                        errorMessage += 'Camera constraints not supported.';
+                    } else {
+                        errorMessage += error.message;
+                    }
+                    
+                    this.updateStatus(errorMessage, 'error');
                     this.resetButtons();
                 }
+            }
+
+            startQuagga() {
+                console.log("Quagga initialization finished. Starting scanner...");
+                Quagga.start();
+                this.updateStatus('Scanner active - Point camera at barcode', 'success');
+                
+                // Listen for successful scans
+                Quagga.onDetected((result) => {
+                    const code = result.codeResult.code;
+                    
+                    // Prevent duplicate scans within a short time
+                    if (!this.scannedCodes.has(code)) {
+                        this.scannedCodes.add(code);
+                        this.handleBarcodeDetected(code);
+                        
+                        // Remove from set after 2 seconds to allow rescanning
+                        setTimeout(() => {
+                            this.scannedCodes.delete(code);
+                        }, 2000);
+                    }
+                });
             }
 
             stopScanning() {
