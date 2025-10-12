@@ -1120,21 +1120,23 @@
 
             saveScannedItem(item) {
                 try {
-                    const existingData = JSON.parse(localStorage.getItem('scannedBarcodes') || '[]');
-                    
+                    const datasets = JSON.parse(localStorage.getItem('datasets') || '[]');
+                    const currentDatasetIndex = datasets.findIndex(ds => ds.active);
+                    const currentDataset = datasets[currentDatasetIndex] || { name: 'Current Dataset', data: [] };
+
                     // Check if this barcode already exists
-                    const existingIndex = existingData.findIndex(existing => existing.code === item.code);
+                    const existingIndex = currentDataset.data.findIndex(existing => existing.code === item.code);
                     
                     if (existingIndex !== -1) {
                         // Update quantity if item already exists
-                        existingData[existingIndex].quantity = (existingData[existingIndex].quantity || 1) + item.quantity;
-                        existingData[existingIndex].timestamp = item.timestamp;
+                        currentDataset.data[existingIndex].quantity = (currentDataset.data[existingIndex].quantity || 1) + item.quantity;
+                        currentDataset.data[existingIndex].timestamp = item.timestamp;
                     } else {
                         // Add new item to the beginning of the array
-                        existingData.unshift(item);
+                        currentDataset.data.unshift(item);
                     }
                     
-                    localStorage.setItem('scannedBarcodes', JSON.stringify(existingData));
+                    localStorage.setItem('datasets', JSON.stringify(datasets));
                     console.log('Item saved to localStorage:', item);
                     
                 } catch (error) {
@@ -1196,15 +1198,40 @@
                 this.scannedData = this.loadData();
                 this.updateStats();
                 this.displayRecentScans();
+                this.updateCurrentDatasetDisplay();
             }
 
             loadData() {
                 try {
-                    const data = localStorage.getItem('scannedBarcodes');
-                    return data ? JSON.parse(data) : [];
+                    const datasets = JSON.parse(localStorage.getItem('datasets') || '[]');
+                    const currentDatasetIndex = datasets.findIndex(ds => ds.active);
+                    const currentDataset = datasets[currentDatasetIndex];
+                    
+                    if (currentDataset) {
+                        return currentDataset.data || [];
+                    }
+                    
+                    // Fallback to legacy scannedBarcodes if no dataset is active
+                    const legacyData = localStorage.getItem('scannedBarcodes');
+                    return legacyData ? JSON.parse(legacyData) : [];
                 } catch (error) {
                     console.error('Error loading data:', error);
                     return [];
+                }
+            }
+
+            updateCurrentDatasetDisplay() {
+                try {
+                    const datasets = JSON.parse(localStorage.getItem('datasets') || '[]');
+                    const currentDatasetIndex = datasets.findIndex(ds => ds.active);
+                    const currentDataset = datasets[currentDatasetIndex];
+                    
+                    const displayElement = document.getElementById('currentDatasetDisplay');
+                    if (displayElement) {
+                        displayElement.textContent = currentDataset ? currentDataset.name : 'No Dataset Selected';
+                    }
+                } catch (error) {
+                    console.error('Error updating dataset display:', error);
                 }
             }
 
@@ -1497,7 +1524,7 @@
                 return;
             }
 
-            datasets.push({ name: newDatasetName, data: [] }); // Initialize with empty data
+            datasets.push({ name: newDatasetName, data: [], active: false }); // Initialize with empty data and inactive
             localStorage.setItem('datasets', JSON.stringify(datasets));
             alert(`Dataset "${newDatasetName}" created successfully!`);
             loadDatasets();
@@ -1507,47 +1534,75 @@
         function loadDatasets() {
             const datasetList = document.getElementById('datasetList');
             const currentDatasetName = document.getElementById('currentDatasetName');
-            const datasets = JSON.parse(localStorage.getItem('datasets') || '[]');
+            let datasets = JSON.parse(localStorage.getItem('datasets') || '[]');
 
-            datasetList.innerHTML = '';
-            currentDatasetName.textContent = 'No dataset selected';
-
+            // Initialize with a default dataset if none exist
             if (datasets.length === 0) {
-                datasetList.innerHTML = '<p>No datasets found. Create a new one!</p>';
-                return;
+                datasets = [{ name: 'Default Dataset', data: [], active: true }];
+                localStorage.setItem('datasets', JSON.stringify(datasets));
+            }
+
+            // Ensure at least one dataset is active
+            const activeDatasetIndex = datasets.findIndex(ds => ds.active);
+            if (activeDatasetIndex === -1) {
+                datasets[0].active = true;
+                localStorage.setItem('datasets', JSON.stringify(datasets));
+            }
+
+            const activeDataset = datasets.find(ds => ds.active);
+            
+            datasetList.innerHTML = '';
+            currentDatasetName.textContent = activeDataset ? activeDataset.name : 'No dataset selected';
+
+            // Update the main page display
+            const displayElement = document.getElementById('currentDatasetDisplay');
+            if (displayElement) {
+                displayElement.textContent = activeDataset ? activeDataset.name : 'No Dataset Selected';
             }
 
             datasets.forEach((dataset, index) => {
                 const datasetItem = document.createElement('div');
-                datasetItem.className = 'dataset-item';
+                datasetItem.className = dataset.active ? 'dataset-item active' : 'dataset-item';
                 datasetItem.innerHTML = `
                     <div class="dataset-info">
                         <h4>${dataset.name}</h4>
                         <p>Items: ${dataset.data.length}</p>
                     </div>
                     <div class="dataset-actions">
-                        <button class="btn btn-primary" onclick="activateDataset(${index})">Activate</button>
+                        ${dataset.active ? 
+                            '<button class="btn btn-success">Active</button>' : 
+                            `<button class="btn btn-primary" onclick="activateDataset(${index})">Activate</button>`
+                        }
                         <button class="btn btn-secondary" onclick="deleteDataset(${index})">Delete</button>
                     </div>
                 `;
                 datasetList.appendChild(datasetItem);
             });
-
-            // Attempt to activate the first dataset if none are active
-            const activeDatasetIndex = datasets.findIndex(ds => ds.active);
-            if (activeDatasetIndex === -1 && datasets.length > 0) {
-                activateDataset(0);
-            }
         }
 
         function activateDataset(index) {
-            const datasets = JSON.parse(localStorage.getItem('datasets') || '[]');
+            let datasets = JSON.parse(localStorage.getItem('datasets') || '[]');
             datasets.forEach(ds => ds.active = false);
             datasets[index].active = true;
             localStorage.setItem('datasets', JSON.stringify(datasets));
+            
+            // Update displays
+            const displayElement = document.getElementById('currentDatasetDisplay');
+            if (displayElement) {
+                displayElement.textContent = datasets[index].name;
+            }
+            
             document.getElementById('currentDatasetName').textContent = datasets[index].name;
             alert(`Dataset "${datasets[index].name}" activated.`);
             loadDatasets(); // Reload to update active class
+            
+            // Refresh home page data
+            if (homePage) {
+                homePage.scannedData = homePage.loadData();
+                homePage.updateStats();
+                homePage.displayRecentScans();
+                homePage.updateCurrentDatasetDisplay();
+            }
         }
 
         function deleteDataset(index) {
