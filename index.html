@@ -356,10 +356,10 @@
 
         .quantity-input {
             width: 80px;
-            padding: 10px;
+            padding: 8px;
             border: 2px solid #e9ecef;
             border-radius: 8px;
-            font-size: 1.2em;
+            font-size: 1.1em;
             text-align: center;
             font-weight: 600;
         }
@@ -415,7 +415,7 @@
             display: grid;
             grid-template-columns: 2fr 1fr 1fr 1fr auto;
             gap: 15px;
-            padding: 15px;
+            padding: 12px;
             border-bottom: 1px solid #e9ecef;
             align-items: center;
         }
@@ -440,7 +440,7 @@
             color: white;
             border: none;
             border-radius: 5px;
-            padding: 5px 10px;
+            padding: 4px 8px;
             cursor: pointer;
             font-size: 0.8em;
         }
@@ -495,7 +495,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px;
+            padding: 12px;
             border: 1px solid #e9ecef;
             border-radius: 8px;
             margin-bottom: 10px;
@@ -523,7 +523,7 @@
         }
 
         .dataset-actions button {
-            padding: 5px 10px;
+            padding: 4px 8px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
@@ -547,7 +547,7 @@
 
         .new-dataset-input {
             flex: 1;
-            padding: 10px;
+            padding: 8px;
             border: 2px solid #e9ecef;
             border-radius: 8px;
         }
@@ -619,6 +619,11 @@
 
         <div class="main-content">
             <div class="scanner-section">
+                <div class="dataset-info">
+                    <h3>📁 Current Dataset: <span id="currentDatasetDisplay">Default Dataset</span></h3>
+                    <button class="btn btn-secondary" onclick="openDatasetModal()" style="margin-bottom: 20px;">Switch Dataset</button>
+                </div>
+                
                 <div class="scanner-container">
                     <div id="scanner">
                         <p>Click "Start Scanner" to begin scanning barcodes</p>
