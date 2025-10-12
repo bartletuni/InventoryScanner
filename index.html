@@ -1372,6 +1372,82 @@
             openDatasetModal();
         }
 
+        function openItemsModal() {
+            const modal = document.getElementById('itemsModal');
+            modal.style.display = 'block';
+            loadItemsInModal();
+        }
+
+        function closeItemsModal() {
+            document.getElementById('itemsModal').style.display = 'none';
+        }
+
+        function loadItemsInModal() {
+            const itemsList = document.getElementById('itemsList');
+            const scannedData = JSON.parse(localStorage.getItem('scannedBarcodes') || '[]');
+            
+            if (scannedData.length === 0) {
+                itemsList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📦</div>
+                        <p>No scanned items yet. Start scanning to see your products here!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            itemsList.innerHTML = `
+                <div class="item-row" style="font-weight: bold; background-color: #f8f9fa;">
+                    <div>Product Details</div>
+                    <div>Barcode</div>
+                    <div>Quantity</div>
+                    <div>Date</div>
+                    <div>Action</div>
+                </div>
+            ` + scannedData.map((item, index) => `
+                <div class="item-row">
+                    <div class="item-details">
+                        <h4>${item.productName || 'Unknown Product'}</h4>
+                        <p>${item.productBrand || 'Unknown Brand'} • ${item.productCategory || 'Unknown Category'}</p>
+                    </div>
+                    <div>${item.code}</div>
+                    <div>${item.quantity || 1}</div>
+                    <div>${new Date(item.timestamp).toLocaleDateString()}</div>
+                    <div>
+                        <button class="delete-btn" onclick="deleteItem(${index})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function deleteItem(index) {
+            const scannedData = JSON.parse(localStorage.getItem('scannedBarcodes') || '[]');
+            const item = scannedData[index];
+            
+            if (confirm(`Are you sure you want to delete "${item.productName || 'Unknown Product'}"?`)) {
+                scannedData.splice(index, 1);
+                localStorage.setItem('scannedBarcodes', JSON.stringify(scannedData));
+                
+                // Refresh the modal content
+                loadItemsInModal();
+                
+                // Update home page stats
+                if (homePage) {
+                    homePage.scannedData = homePage.loadData();
+                    homePage.updateStats();
+                    homePage.displayRecentScans();
+                }
+                
+                alert('Item deleted successfully!');
+            }
+        }
+
+        function openDatasetModal() {
+            const modal = document.getElementById('datasetModal');
+            modal.style.display = 'block';
+            loadDatasets();
+        }
+
         function closeDatasetModal() {
             document.getElementById('datasetModal').style.display = 'none';
         }
