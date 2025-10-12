@@ -1018,10 +1018,6 @@
                 try {
                     this.updateStatus('Looking up product information...', 'info');
                     
-                    // Try to fetch from Open Food Facts API
-                    const response = await fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`);
-                    const data = await response.json();
-                    
                     let productInfo = {
                         code: barcode,
                         timestamp: new Date().toISOString(),
@@ -1029,20 +1025,84 @@
                         quantity: 1
                     };
                     
-                    if (data.status === 1 && data.product) {
-                        const product = data.product;
-                        productInfo = {
-                            ...productInfo,
-                            found: true,
-                            productName: product.product_name || 'Unknown Product',
-                            productBrand: product.brands || 'Unknown Brand',
-                            productCategory: product.categories_tags ? product.categories_tags[0] : 'Unknown Category',
-                            productSize: product.quantity || product.serving_size || product.net_weight || 'Unknown Size',
-                            productImage: product.image_url || null
-                        };
+                    // Try multiple databases for product information
+                    let productFound = false;
+                    
+                    // Try Open Food Facts API first
+                    try {
+                        const offResponse = await fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`);
+                        const offData = await offResponse.json();
                         
-                        this.updateStatus(`Found: ${productInfo.productName}`, 'success');
-                    } else {
+                        if (offData.status === 1 && offData.product) {
+                            const product = offData.product;
+                            productInfo = {
+                                ...productInfo,
+                                found: true,
+                                productName: product.product_name || 'Unknown Product',
+                                productBrand: product.brands || 'Unknown Brand',
+                                productCategory: product.categories_tags ? product.categories_tags[0] : 'Unknown Category',
+                                productSize: product.quantity || product.serving_size || product.net_weight || 'Unknown Size',
+                                productImage: product.image_url || null
+                            };
+                            productFound = true;
+                            this.updateStatus(`Found: ${productInfo.productName}`, 'success');
+                        }
+                    } catch (offError) {
+                        console.log('Open Food Facts lookup failed:', offError);
+                    }
+                    
+                    // If not found in Open Food Facts, try UPCitemdb
+                    if (!productFound) {
+                        try {
+                            const upcResponse = await fetch(`https://api.upcitemdb.com/prod/trial/lookup?upc=${barcode}`);
+                            const upcData = await upcResponse.json();
+                            
+                            if (upcData.code === "OK" && upcData.items && upcData.items.length > 0) {
+                                const item = upcData.items[0];
+                                productInfo = {
+                                    ...productInfo,
+                                    found: true,
+                                    productName: item.title || 'Unknown Product',
+                                    productBrand: item.brand || 'Unknown Brand',
+                                    productCategory: item.category || 'Unknown Category',
+                                    productSize: item.size || item.dimension || 'Unknown Size',
+                                    productImage: item.images && item.images.length > 0 ? item.images[0] : null
+                                };
+                                productFound = true;
+                                this.updateStatus(`Found: ${productInfo.productName}`, 'success');
+                            }
+                        } catch (upcError) {
+                            console.log('UPCitemdb lookup failed:', upcError);
+                        }
+                    }
+                    
+                    // If still not found, try Barcode Lookup API
+                    if (!productFound) {
+                        try {
+                            const barcodeResponse = await fetch(`https://api.barcodelookup.com/v3/products?barcode=${barcode}&formatted=y&key=YOUR_API_KEY`);
+                            const barcodeData = await barcodeResponse.json();
+                            
+                            if (barcodeData.products && barcodeData.products.length > 0) {
+                                const product = barcodeData.products[0];
+                                productInfo = {
+                                    ...productInfo,
+                                    found: true,
+                                    productName: product.product_name || 'Unknown Product',
+                                    productBrand: product.brand || 'Unknown Brand',
+                                    productCategory: product.category || 'Unknown Category',
+                                    productSize: product.size || product.weight || 'Unknown Size',
+                                    productImage: product.images && product.images.length > 0 ? product.images[0] : null
+                                };
+                                productFound = true;
+                                this.updateStatus(`Found: ${productInfo.productName}`, 'success');
+                            }
+                        } catch (barcodeError) {
+                            console.log('Barcode Lookup API failed:', barcodeError);
+                        }
+                    }
+                    
+                    // If no database found the product
+                    if (!productFound) {
                         productInfo.productName = 'Unknown Product';
                         productInfo.productBrand = 'Unknown Brand';
                         productInfo.productCategory = 'Unknown Category';
@@ -1065,6 +1125,7 @@
                         productName: 'Unknown Product',
                         productBrand: 'Unknown Brand',
                         productCategory: 'Unknown Category',
+                        productSize: 'Unknown Size',
                         quantity: 1
                     };
                     
