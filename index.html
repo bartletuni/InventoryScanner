@@ -236,6 +236,146 @@
             opacity: 0.5;
         }
 
+        .scanner-section {
+            text-align: center;
+        }
+
+        .scanner-container {
+            text-align: center;
+        }
+
+        #scanner {
+            text-align: center;
+        }
+
+        .scanner-instructions {
+            text-align: center;
+        }
+
+        .controls {
+            text-align: center;
+        }
+
+        #status {
+            text-align: center;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Quantity Modal Styles */
+        .quantity-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .quantity-modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .quantity-modal h3 {
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 1.5em;
+        }
+
+        .product-info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .product-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .product-brand {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .quantity-input-group {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .quantity-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.2em;
+            transition: all 0.3s ease;
+        }
+
+        .quantity-btn:hover {
+            background: #5a67d8;
+            transform: scale(1.1);
+        }
+
+        .quantity-input {
+            width: 80px;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1.2em;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .quantity-input:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
         @media (max-width: 768px) {
             .container {
                 margin: 10px;
@@ -272,66 +412,45 @@
                 align-self: flex-end;
             }
         }
-
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .loading-spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .scanner-section {
-            text-align: center;
-        }
-
-        .scanner-container {
-            text-align: center;
-        }
-
-        #scanner {
-            text-align: center;
-        }
-
-        .scanner-instructions {
-            text-align: center;
-        }
-
-        .controls {
-            text-align: center;
-        }
-
-        #status {
-            text-align: center;
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <button class="back-btn" onclick="window.location.href='index.html'">←</button>
             <h1>📱 Barcode Scanner</h1>
             <p>Scan barcodes and lookup product information</p>
-            <div class="dataset-info">
-                <span id="currentDataset">Default Dataset</span>
-                <button class="dataset-btn" onclick="showDatasetModal()">📁</button>
-            </div>
         </div>
 
         <div class="main-content">
+            <div class="scanner-section">
+                <div class="scanner-container">
+                    <div id="scanner">
+                        <p>Click "Start Scanner" to begin scanning barcodes</p>
+                    </div>
+                    <div class="scanner-overlay">
+                        <div class="scan-area">
+                            <div class="scan-corners">
+                                <div class="scan-corner top-left"></div>
+                                <div class="scan-corner top-right"></div>
+                                <div class="scan-corner bottom-left"></div>
+                                <div class="scan-corner bottom-right"></div>
+                            </div>
+                            <div class="scan-line"></div>
+                        </div>
+                        <div class="scanner-instructions">
+                            Place the barcode within the scan area.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <button id="startBtn" class="btn btn-primary">Start Scanner</button>
+                    <button id="stopBtn" class="btn btn-secondary" disabled>Stop Scanner</button>
+                </div>
+
+                <div id="status" class="status hidden"></div>
+            </div>
+
             <div class="action-grid">
                 <div class="action-card">
                     <div class="icon">📷</div>
@@ -385,34 +504,25 @@
                 <h3>🕒 Recent Scans</h3>
                 <div id="recentScansList"></div>
             </div>
+        </div>
+    </div>
 
-            <div class="scanner-section">
-                <div class="scanner-container">
-                    <div id="scanner">
-                        <p>Click "Start Scanner" to begin scanning barcodes</p>
-                    </div>
-                    <div class="scanner-overlay">
-                        <div class="scan-area">
-                            <div class="scan-corners">
-                                <div class="scan-corner top-left"></div>
-                                <div class="scan-corner top-right"></div>
-                                <div class="scan-corner bottom-left"></div>
-                                <div class="scan-corner bottom-right"></div>
-                            </div>
-                            <div class="scan-line"></div>
-                        </div>
-                        <div class="scanner-instructions">
-                            Place the barcode within the scan area.
-                        </div>
-                    </div>
-                </div>
-
-                <div class="controls">
-                    <button id="startBtn" class="btn btn-primary">Start Scanner</button>
-                    <button id="stopBtn" class="btn btn-secondary" disabled>Stop Scanner</button>
-                </div>
-
-                <div id="status" class="status hidden"></div>
+    <!-- Quantity Modal -->
+    <div id="quantityModal" class="quantity-modal">
+        <div class="quantity-modal-content">
+            <h3>Set Quantity</h3>
+            <div class="product-info">
+                <div class="product-name" id="modalProductName">Product Name</div>
+                <div class="product-brand" id="modalProductBrand">Brand Name</div>
+            </div>
+            <div class="quantity-input-group">
+                <button class="quantity-btn" onclick="adjustQuantity(-1)">-</button>
+                <input type="number" id="quantityInput" class="quantity-input" value="1" min="1">
+                <button class="quantity-btn" onclick="adjustQuantity(1)">+</button>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="confirmQuantity()">Confirm</button>
+                <button class="btn btn-secondary" onclick="cancelQuantity()">Cancel</button>
             </div>
         </div>
     </div>
@@ -425,6 +535,7 @@
             constructor() {
                 this.isScanning = false;
                 this.scannedCodes = new Set();
+                this.currentProductInfo = null;
                 this.initializeElements();
                 this.bindEvents();
             }
@@ -434,6 +545,8 @@
                 this.stopBtn = document.getElementById('stopBtn');
                 this.scanner = document.getElementById('scanner');
                 this.status = document.getElementById('status');
+                this.quantityModal = document.getElementById('quantityModal');
+                this.quantityInput = document.getElementById('quantityInput');
             }
 
             bindEvents() {
@@ -590,10 +703,10 @@
                         this.scannedCodes.add(code);
                         this.handleBarcodeDetected(code);
                         
-                        // Remove from set after 2 seconds to allow rescanning
+                        // Remove from set after 1 second to allow rescanning
                         setTimeout(() => {
                             this.scannedCodes.delete(code);
-                        }, 2000);
+                        }, 1000);
                     }
                 });
             }
@@ -694,8 +807,9 @@
                         this.updateStatus('Product not found in database', 'info');
                     }
                     
-                    // Save to localStorage
-                    this.saveScannedItem(productInfo);
+                    // Store product info and show quantity modal
+                    this.currentProductInfo = productInfo;
+                    this.showQuantityModal();
                     
                 } catch (error) {
                     console.error('Error looking up product:', error);
@@ -711,9 +825,56 @@
                         quantity: 1
                     };
                     
-                    this.saveScannedItem(basicInfo);
+                    this.currentProductInfo = basicInfo;
+                    this.showQuantityModal();
                     this.updateStatus('Barcode saved (lookup failed)', 'info');
                 }
+            }
+
+            showQuantityModal() {
+                if (!this.currentProductInfo) return;
+                
+                // Update modal content
+                document.getElementById('modalProductName').textContent = this.currentProductInfo.productName || 'Unknown Product';
+                document.getElementById('modalProductBrand').textContent = this.currentProductInfo.productBrand || 'Unknown Brand';
+                this.quantityInput.value = '1';
+                
+                // Show modal
+                this.quantityModal.style.display = 'block';
+                this.quantityInput.focus();
+                this.quantityInput.select();
+            }
+
+            hideQuantityModal() {
+                this.quantityModal.style.display = 'none';
+                this.currentProductInfo = null;
+            }
+
+            confirmQuantity() {
+                if (!this.currentProductInfo) return;
+                
+                const quantity = parseInt(this.quantityInput.value) || 1;
+                this.currentProductInfo.quantity = quantity;
+                
+                // Save to localStorage
+                this.saveScannedItem(this.currentProductInfo);
+                
+                // Hide modal
+                this.hideQuantityModal();
+                
+                // Update home page data
+                if (homePage) {
+                    homePage.scannedData = homePage.loadData();
+                    homePage.updateStats();
+                    homePage.displayRecentScans();
+                }
+                
+                this.updateStatus(`Added ${quantity} x ${this.currentProductInfo.productName}`, 'success');
+            }
+
+            cancelQuantity() {
+                this.hideQuantityModal();
+                this.updateStatus('Scan cancelled', 'info');
             }
 
             saveScannedItem(item) {
@@ -725,7 +886,7 @@
                     
                     if (existingIndex !== -1) {
                         // Update quantity if item already exists
-                        existingData[existingIndex].quantity = (existingData[existingIndex].quantity || 1) + 1;
+                        existingData[existingIndex].quantity = (existingData[existingIndex].quantity || 1) + item.quantity;
                         existingData[existingIndex].timestamp = item.timestamp;
                     } else {
                         // Add new item to the beginning of the array
@@ -967,14 +1128,7 @@
         }
 
         function viewScannedItems() {
-            // This could navigate to a detailed view page
-            // For now, we'll show an alert with the count
-            const data = JSON.parse(localStorage.getItem('scannedBarcodes') || '[]');
-            if (data.length === 0) {
-                alert('No scanned items yet. Start scanning to see your products!');
-            } else {
-                alert(`You have ${data.length} scanned items. PDF export functionality is available above.`);
-            }
+            window.location.href = 'items.html';
         }
 
         function exportToPDF() {
@@ -987,6 +1141,42 @@
                 scannerSection.scrollIntoView({ behavior: 'smooth' });
             }
         }
+
+        function adjustQuantity(change) {
+            const input = document.getElementById('quantityInput');
+            const currentValue = parseInt(input.value) || 1;
+            const newValue = Math.max(1, currentValue + change);
+            input.value = newValue;
+        }
+
+        function confirmQuantity() {
+            if (barcodeScanner) {
+                barcodeScanner.confirmQuantity();
+            }
+        }
+
+        function cancelQuantity() {
+            if (barcodeScanner) {
+                barcodeScanner.cancelQuantity();
+            }
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('quantityModal');
+            if (event.target === modal) {
+                cancelQuantity();
+            }
+        }
+
+        // Handle Enter key in quantity input
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('quantityInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    confirmQuantity();
+                }
+            });
+        });
 
         // Initialize the barcode scanner and home page when the document loads
         let homePage;
@@ -1006,4 +1196,6 @@
         });
     </script>
 </body>
+</html>
+
 </html>
