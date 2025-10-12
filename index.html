@@ -413,7 +413,7 @@
 
         .item-row {
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            grid-template-columns: 2fr 1fr 1fr auto;
             gap: 15px;
             padding: 12px;
             border-bottom: 1px solid #e9ecef;
@@ -427,12 +427,25 @@
         .item-details h4 {
             margin: 0 0 5px 0;
             color: #333;
+            font-size: 1em;
         }
 
         .item-details p {
             margin: 0;
             color: #666;
+            font-size: 0.85em;
+        }
+
+        .item-size {
             font-size: 0.9em;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .item-quantity {
+            font-size: 0.9em;
+            color: #333;
+            font-weight: 600;
         }
 
         .delete-btn {
@@ -440,7 +453,7 @@
             color: white;
             border: none;
             border-radius: 5px;
-            padding: 4px 8px;
+            padding: 6px 10px;
             cursor: pointer;
             font-size: 0.8em;
         }
@@ -606,6 +619,58 @@
 
             .scan-quantity {
                 align-self: flex-end;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .items-modal-content {
+                margin: 2% auto;
+                padding: 20px;
+                width: 95%;
+                max-height: 90vh;
+            }
+
+            .item-row {
+                grid-template-columns: 1fr;
+                gap: 8px;
+                padding: 15px 10px;
+                text-align: left;
+            }
+
+            .item-row:first-child {
+                display: none; /* Hide header row on mobile */
+            }
+
+            .item-details {
+                margin-bottom: 8px;
+            }
+
+            .item-details h4 {
+                font-size: 1.1em;
+                margin-bottom: 3px;
+            }
+
+            .item-details p {
+                font-size: 0.9em;
+                margin-bottom: 5px;
+            }
+
+            .mobile-info {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-top: 8px;
+            }
+
+            .mobile-info-left {
+                display: flex;
+                gap: 15px;
+                font-size: 0.9em;
+            }
+
+            .delete-btn {
+                padding: 8px 12px;
+                font-size: 0.9em;
             }
         }
     </style>
